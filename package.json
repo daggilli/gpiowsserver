@@ -1,0 +1,30 @@
+{
+  "name": "tswebsocketserver",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "A minimal WebSocket server in TypeScript",
+  "main": "target/dist/index.js",
+  "scripts": {
+    "start": "node target/dist/index.js",
+    "build": "npm run lint && tsc",
+    "buildq": "tsc",
+    "lint": "npx eslint .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "devDependencies": {
+    "@eslint/js": "^9.19.0",
+    "@stylistic/eslint-plugin": "^3.0.0",
+    "@types/eslint": "^9.6.1",
+    "@types/node": "22.12.0",
+    "@types/ws": "^8.5.14",
+    "eslint": "^9.19.0",
+    "source-map-support": "^0.5.21",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "8.22.0"
+  },
+  "dependencies": {
+    "onoff": "^6.0.3",
+    "ws": "^8.18.0"
+  }
+}

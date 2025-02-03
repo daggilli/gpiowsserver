@@ -1,0 +1,32 @@
+{
+  "port": 9080,
+  "perMessageDeflate": false,
+  "pins": [
+    {
+      "pinName": "GPIO17",
+      "direction": "in",
+      "edge": "both"
+    },
+    {
+      "pinName": "GPIO27",
+      "direction": "in",
+      "edge": "both"
+    },
+    {
+      "pinName": "GPIO25",
+      "direction": "out"
+    },
+    {
+      "pinName": "GPIO16",
+      "direction": "out"
+    },
+    {
+      "pinName": "GPIO20",
+      "direction": "out"
+    },
+    {
+      "pinName": "GPIO21",
+      "direction": "out"
+    }
+  ]
+}
