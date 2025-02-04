@@ -263,3 +263,5 @@ export class GpioSocketServer extends SocketServer {
     }
   }
 }
+
+export default GpioSocketServer;
