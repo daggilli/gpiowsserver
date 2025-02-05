@@ -28,6 +28,18 @@ export interface PinState extends PinConfig {
   state?: boolean
 }
 
+export interface Params {
+  pinName: string;
+  state?: boolean;
+  direction?: Direction;
+  edge?: Edge;
+}
+
+export interface Message {
+  command: string;
+  params?: Params;
+}
+
 export interface AckPayload {
   command: string;
   pinName: string;

@@ -18,6 +18,10 @@ import {
   GET_PIN_DIRECTION_EXPECTED_SEND,
   REGISTER_PIN_COMMAND,
   REGISTER_PIN_EXPECTED_SEND,
+  MALFORMED_COMMAND_NO_PINNAME,
+  MALFORMED_COMMAND_NO_STATE,
+  MALFORMED_COMMAND_NO_DIRECTION,
+  MALFORMED_COMMAND_UNKNOWN,
 } from './testConstants.js';
 import { CallbackFunction } from './testInterfaces.js';
 
@@ -85,9 +89,23 @@ describe('GpioSocketServer', () => {
     expect(server._config).toStrictEqual(SERVER_CONFIG);
   });
 
-  it('should reject a malformed message', () => {
+  it('should reject a malformed message: no command field', () => {
     // @ts-ignore
     server.handleMessage(mockSocket, JSON.stringify(MALFORMED_COMMAND));
+    expect(sendSpy).toHaveBeenCalledTimes(1);
+    expect(sendSpy).toHaveBeenCalledWith(MALFORMED_COMMAND_EXPECTED_SEND);
+  });
+
+  it('should reject a malformed message: unrecognised command', () => {
+    // @ts-ignore
+    server.handleMessage(mockSocket, JSON.stringify(MALFORMED_COMMAND_UNKNOWN));
+    expect(sendSpy).toHaveBeenCalledTimes(1);
+    expect(sendSpy).toHaveBeenCalledWith(MALFORMED_COMMAND_EXPECTED_SEND);
+  });
+
+  it('should reject a malformed message: no params.pinName field', () => {
+    // @ts-ignore
+    server.handleMessage(mockSocket, JSON.stringify(MALFORMED_COMMAND_NO_PINNAME));
     expect(sendSpy).toHaveBeenCalledTimes(1);
     expect(sendSpy).toHaveBeenCalledWith(MALFORMED_COMMAND_EXPECTED_SEND);
   });
@@ -100,6 +118,13 @@ describe('GpioSocketServer', () => {
     expect(setPinStateSpy).toHaveBeenCalledWith(OUTPUT_PIN, true);
     expect(sendSpy).toHaveBeenCalledTimes(1);
     expect(sendSpy).toHaveBeenCalledWith(SET_PIN_STATE_EXPECTED_SEND);
+  });
+
+  it('should reject a malformed message: setState with no params.pinName field', () => {
+    // @ts-ignore
+    server.handleMessage(mockSocket, JSON.stringify(MALFORMED_COMMAND_NO_STATE));
+    expect(sendSpy).toHaveBeenCalledTimes(1);
+    expect(sendSpy).toHaveBeenCalledWith(MALFORMED_COMMAND_EXPECTED_SEND);
   });
 
   it('should handle a toggleState message', () => {
@@ -139,6 +164,13 @@ describe('GpioSocketServer', () => {
     expect(registerPinSpy).toHaveBeenCalledTimes(1);
     expect(sendSpy).toHaveBeenCalledTimes(1);
     expect(sendSpy).toHaveBeenCalledWith(REGISTER_PIN_EXPECTED_SEND);
+  });
+
+  it('should reject a malformed message: registerPin with no params.direction field', () => {
+    // @ts-ignore
+    server.handleMessage(mockSocket, JSON.stringify(MALFORMED_COMMAND_NO_DIRECTION));
+    expect(sendSpy).toHaveBeenCalledTimes(1);
+    expect(sendSpy).toHaveBeenCalledWith(MALFORMED_COMMAND_EXPECTED_SEND);
   });
 
   it('should handle a getRegisteredPins message', () => {

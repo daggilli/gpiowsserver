@@ -22,9 +22,32 @@ export const SERVER_CONFIG: GpioServerConfig = {
 };
 
 export const MALFORMED_COMMAND = {
-  noCmmmandField: true
+  noCmmmandField: true,
 };
+
+export const MALFORMED_COMMAND_UNKNOWN = {
+  command: '__NOT_A_VALID_COMMAND__',
+};
+
 export const MALFORMED_COMMAND_EXPECTED_SEND = '{"messageType":"error","data":{"errorString":"request message was malformed"}}';
+
+export const MALFORMED_COMMAND_NO_PINNAME = {
+  command: 'setState',
+  params: {},
+};
+
+export const MALFORMED_COMMAND_NO_STATE = {
+  command: 'setState',
+  params: {
+    pinName: OUTPUT_PIN,
+  },
+};
+export const MALFORMED_COMMAND_NO_DIRECTION = {
+  command: 'registerPin',
+  params: {
+    pinName: OUTPUT_PIN,
+  },
+};
 
 export const SET_PIN_STATE_COMMAND = {
   command: 'setState',

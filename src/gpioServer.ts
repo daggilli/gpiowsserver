@@ -1,8 +1,9 @@
 import { MessageEvent, WebSocket } from 'ws';
-import { Ack, GpioServerConfig, PinConfig, PinState } from './interfaces.js';
+import { Ack, GpioServerConfig, Message, PinConfig, PinState } from './interfaces.js';
 import { SocketServer } from './server.js';
 import { Gpio, BinaryValue, Direction, Edge } from 'onoff';
 import { PinMapper } from './pinMapper.js';
+import { validateMessage } from './validateMessage.js';
 
 const boolToBin = (val: boolean): BinaryValue => val ? 1 : 0;
 const binToBool = (val: BinaryValue): boolean => val === 1;
@@ -180,23 +181,27 @@ export class GpioSocketServer extends SocketServer {
     if (typeof data === 'string') {
       messageStr = data;
     }
-    const message = JSON.parse(messageStr);
+    const message: Message = JSON.parse(messageStr);
 
-    if (!Object.hasOwn(message, 'command') || !message.command.length) {
+    if (!validateMessage(message)) {
       socket.send(malformedMessageError);
       return;
     }
 
-    if (!Object.hasOwn(message, 'params')) message.params = {};
-
     // console.log(`[server] received command ${data} ${messageStr} ${message.command}`);
 
+    let pinName: string = '';
+    let state: boolean = false;
+
     const { command, params } = message;
-    const { pinName } = params;
+    if (params) {
+      pinName = params.pinName;
+      state = params.state ?? false;
+    }
 
     switch (command) {
       case 'setState': {
-        this.setPinState(pinName, params.state);
+        this.setPinState(pinName, state);
         reply = ackReply(ack(pinName, command));
         break;
       }
@@ -234,7 +239,7 @@ export class GpioSocketServer extends SocketServer {
       }
 
       case 'registerPin': {
-        this.registerPin(message.params);
+        this.registerPin(params as PinConfig);
         reply = ackReply(ack(pinName, command));
         break;
       }
