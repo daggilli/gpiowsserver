@@ -7,9 +7,10 @@
     "sourceMap": true,
     "outDir": "target/dist",
     "esModuleInterop": true,
-    "noEmit": false
+    "noEmit": true
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "test/**/*"
   ]
 }

@@ -189,7 +189,7 @@ export class GpioSocketServer extends SocketServer {
 
     if (!Object.hasOwn(message, 'params')) message.params = {};
 
-    console.log(`[server] received command ${data} ${messageStr} ${message.command}`);
+    // console.log(`[server] received command ${data} ${messageStr} ${message.command}`);
 
     const { command, params } = message;
     const { pinName } = params;
@@ -255,12 +255,6 @@ export class GpioSocketServer extends SocketServer {
     }
 
     socket.send(reply);
-  }
-
-  sendMessage(data: string | Buffer): void {
-    if (this._socket) {
-      this._socket.send(data);
-    }
   }
 }
 

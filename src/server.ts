@@ -45,8 +45,6 @@ export abstract class SocketServer {
     console.error(err);
   }
 
-  abstract sendMessage(data: string | Buffer): void;
-
   handleClose(_code: number, _reason?: Buffer) {
     if (this._socket) {
       this._socket = null;
