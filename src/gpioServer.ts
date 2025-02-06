@@ -1,22 +1,27 @@
 import { MessageEvent, WebSocket } from 'ws';
-import { Ack, GpioServerConfig, Message, PinConfig, PinState } from './interfaces.js';
+import {
+  Ack,
+  GpioServerConfig,
+  Message,
+  PinConfig,
+  PinState,
+} from './interfaces.js';
 import { SocketServer } from './server.js';
 import { Gpio, BinaryValue, Direction, Edge } from 'onoff';
 import { PinMapper } from './pinMapper.js';
 import { validateMessage } from './validateMessage.js';
+import { Logger } from 'winston';
 
-const boolToBin = (val: boolean): BinaryValue => val ? 1 : 0;
+const boolToBin = (val: boolean): BinaryValue => (val ? 1 : 0);
 const binToBool = (val: BinaryValue): boolean => val === 1;
-const invertValue = (val: BinaryValue): BinaryValue => val === 0 ? 1 : 0;
+const invertValue = (val: BinaryValue): BinaryValue => (val === 0 ? 1 : 0);
 
-const malformedMessageError = JSON.stringify(
-  {
-    messageType: 'error',
-    data: {
-      errorString: 'request message was malformed',
-    }
-  }
-);
+const malformedMessageError = JSON.stringify({
+  messageType: 'error',
+  data: {
+    errorString: 'request message was malformed',
+  },
+});
 
 const ack = (pinName: string, command: string): Ack => ({
   messageType: 'ack',
@@ -31,8 +36,9 @@ const ackReply = (ackObj: Ack) => JSON.stringify(ackObj);
 export class GpioSocketServer extends SocketServer {
   private _mapper: PinMapper;
   private _pins: Map<string, Gpio>;
+  private _logger: Logger | undefined;
 
-  constructor(config: GpioServerConfig) {
+  constructor(config: GpioServerConfig, logger?: Logger) {
     super(config);
     this._mapper = new PinMapper();
     this._pins = new Map();
@@ -40,6 +46,7 @@ export class GpioSocketServer extends SocketServer {
     if (config.pins?.length) {
       this.registerPins(config.pins);
     }
+    this._logger = logger;
   }
 
   // -------------------------------------------------
@@ -55,7 +62,11 @@ export class GpioSocketServer extends SocketServer {
   registerPin(config: PinConfig) {
     const pinNumber = this._mapper.pinNumber(config.pinName);
     if (pinNumber) {
-      const pin = new Gpio(pinNumber, config.direction, config.edge || undefined);
+      const pin = new Gpio(
+        pinNumber,
+        config.direction,
+        config.edge || undefined
+      );
       if (config.direction === 'in' && config.edge) {
         pin.watch(this.interruptHandler.bind(this, config.pinName));
       }
@@ -152,7 +163,11 @@ export class GpioSocketServer extends SocketServer {
     }
   }
 
-  private interruptHandler(pinName: string, err: Error | null | undefined, edge: BinaryValue): void {
+  private interruptHandler(
+    pinName: string,
+    err: Error | null | undefined,
+    edge: BinaryValue
+  ): void {
     const response = JSON.stringify({
       messageType: 'stateChange',
       data: {
@@ -187,6 +202,11 @@ export class GpioSocketServer extends SocketServer {
       socket.send(malformedMessageError);
       return;
     }
+
+    this._logger?.log({
+      level: 'info',
+      message: `[server] received command ${data} ${messageStr} ${message.command}`,
+    });
 
     // console.log(`[server] received command ${data} ${messageStr} ${message.command}`);
 

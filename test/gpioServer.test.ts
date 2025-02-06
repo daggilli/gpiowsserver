@@ -28,12 +28,14 @@ import { CallbackFunction } from './testInterfaces.js';
 jest.mock('ws', () => ({
   WebSocketServer: jest.fn().mockImplementation(() => {
     return {
-      on: (_event: string, _cb: CallbackFunction) => { },
+      on: (_event: string, _cb: CallbackFunction) => {},
     };
   }),
   WebSocket: jest.fn().mockImplementation(() => {
     return {
-      send: (_message: string) => { console.log(_message); }
+      send: (_message: string) => {
+        console.log(_message);
+      },
     };
   }),
 }));
@@ -45,11 +47,17 @@ class MockGpio {
     this._direction = direction;
     this._edge = edge;
   }
-  direction(): string { return this._direction; }
-  edge(): string | undefined { return this._edge; }
-  watch() { }
-  readSync() { return 1; }
-  writeSync(_s: number) { }
+  direction(): string {
+    return this._direction;
+  }
+  edge(): string | undefined {
+    return this._edge;
+  }
+  watch() {}
+  readSync() {
+    return 1;
+  }
+  writeSync(_s: number) {}
 }
 
 jest.mock('onoff', () => ({
@@ -63,7 +71,7 @@ jest.mock('../src/pinMapper.js', () => ({
     return {
       pinNumber: (_pinName: string) => Number(_pinName.slice(4)),
     };
-  })
+  }),
 }));
 
 describe('GpioSocketServer', () => {

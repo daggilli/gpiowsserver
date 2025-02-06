@@ -1,6 +1,6 @@
 'use strict';
 import { Direction, Edge } from 'onoff';
-
+import { Logger } from 'winston';
 export interface ServerConfig {
   port: number;
   perMessageDeflate?: boolean;
@@ -25,7 +25,7 @@ export interface PinConfig {
 }
 
 export interface PinState extends PinConfig {
-  state?: boolean
+  state?: boolean;
 }
 
 export interface Params {
