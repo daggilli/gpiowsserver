@@ -6,7 +6,7 @@ import stylistic from '@stylistic/eslint-plugin';
 
 export default tseslint.config(
   {
-    ignores: ['**/dev/*', '**/dist/*', '**/tests/*', 'tsconfig.json'],
+    ignores: ['**/dev/*', '**/dist/*', '**/tests/*', 'tsconfig.json', '**/logs/*'],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
@@ -24,10 +24,7 @@ export default tseslint.config(
       'no-loss-of-precision': 'off',
       quotes: [2, 'single'],
       '@stylistic/semi': ['error', 'always'],
-      '@stylistic/no-multiple-empty-lines': [
-        'error',
-        { max: 2, maxBOF: 0, maxEOF: 1 },
-      ],
+      '@stylistic/no-multiple-empty-lines': ['error', { max: 2, maxBOF: 0, maxEOF: 1 }],
       '@stylistic/no-trailing-spaces': 'error',
       '@stylistic/block-spacing': ['error', 'always'],
       '@stylistic/array-bracket-spacing': ['error', 'never'],

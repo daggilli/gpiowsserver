@@ -1,10 +1,6 @@
 'use strict';
 import fs from 'fs';
-import {
-  LOCAL_GPIO_DEBUG_PATH,
-  KERNEL_GPIO_DEBUG_PATH,
-  PINMATCHER,
-} from './gpioConstants.js';
+import { LOCAL_GPIO_DEBUG_PATH, KERNEL_GPIO_DEBUG_PATH, PINMATCHER } from './gpioConstants.js';
 
 export class PinMapper {
   private pinMap: Map<string, number>;
@@ -41,4 +37,4 @@ export class PinMapper {
 
     return boardPin;
   }
-};
+}

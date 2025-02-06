@@ -1,5 +1,4 @@
 'use strict';
-
 import { Message } from './interfaces.js';
 
 type Needs = [string, string[]];
@@ -11,7 +10,7 @@ const COMMANDS = [
   'readState',
   'readDirection',
   'registerPin',
-  'getRegisteredPins'
+  'getRegisteredPins',
 ];
 const NEEDS_STATE: Needs = ['state', ['setState']];
 const NEEDS_DIRECTION: Needs = ['direction', ['registerPin']];

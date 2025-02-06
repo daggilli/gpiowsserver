@@ -2,14 +2,10 @@
 import { GpioSocketServer } from './gpioServer.js';
 import { GpioServerConfig } from './interfaces.js';
 import { loadConfigFile } from './utilities.js';
-import { createLogger, transports } from 'winston';
 const serverConfig: GpioServerConfig = loadConfigFile();
-const logger = createLogger({
-  transports: [new transports.Console()],
-});
 
 (async () => {
-  const server = new GpioSocketServer(serverConfig, logger);
+  const server = new GpioSocketServer(serverConfig);
 
   ['SIGINT', 'SIGQUIT', 'SIGTERM'].forEach((sig) =>
     process.on(sig, () => {
@@ -18,5 +14,8 @@ const logger = createLogger({
     })
   );
 
-  console.log(`GPIO WebSocket server listening on ${server.addressString}`);
+  server.logger?.log({
+    level: 'info',
+    message: `GPIO WebSocket server listening on ${server.addressString}`,
+  });
 })();

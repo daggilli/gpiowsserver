@@ -1,6 +1,19 @@
 'use strict';
 import { Direction, Edge } from 'onoff';
-import { Logger } from 'winston';
+
+export interface TransportConfig {
+  level: string;
+}
+
+export interface FileTransportConfig extends TransportConfig {
+  logfilePath: string;
+}
+
+export interface LoggerConfig {
+  useConsole?: TransportConfig;
+  useFile?: FileTransportConfig;
+}
+
 export interface ServerConfig {
   port: number;
   perMessageDeflate?: boolean;
@@ -8,6 +21,7 @@ export interface ServerConfig {
 
 export interface GpioServerConfig extends ServerConfig {
   pins?: PinConfig[];
+  logger?: LoggerConfig;
 }
 
 export interface Pin {

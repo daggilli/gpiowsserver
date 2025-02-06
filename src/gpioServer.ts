@@ -1,16 +1,13 @@
+'use strict';
 import { MessageEvent, WebSocket } from 'ws';
-import {
-  Ack,
-  GpioServerConfig,
-  Message,
-  PinConfig,
-  PinState,
-} from './interfaces.js';
+import { Ack, GpioServerConfig, Message, PinConfig, PinState } from './interfaces.js';
 import { SocketServer } from './server.js';
 import { Gpio, BinaryValue, Direction, Edge } from 'onoff';
 import { PinMapper } from './pinMapper.js';
 import { validateMessage } from './validateMessage.js';
 import { Logger } from 'winston';
+import { makeLogger } from './makeLogger.js';
+import { IncomingMessage } from 'http';
 
 const boolToBin = (val: boolean): BinaryValue => (val ? 1 : 0);
 const binToBool = (val: BinaryValue): boolean => val === 1;
@@ -38,7 +35,7 @@ export class GpioSocketServer extends SocketServer {
   private _pins: Map<string, Gpio>;
   private _logger: Logger | undefined;
 
-  constructor(config: GpioServerConfig, logger?: Logger) {
+  constructor(config: GpioServerConfig) {
     super(config);
     this._mapper = new PinMapper();
     this._pins = new Map();
@@ -46,7 +43,19 @@ export class GpioSocketServer extends SocketServer {
     if (config.pins?.length) {
       this.registerPins(config.pins);
     }
-    this._logger = logger;
+    if (config.logger) this._logger = makeLogger(config.logger);
+  }
+
+  handleConnection(socket: WebSocket, request?: IncomingMessage) {
+    super.handleConnection(socket, request);
+    this._logger?.log({
+      level: 'info',
+      message: `Incoming connection from ${request?.socket.remoteAddress}:${request?.socket.remotePort}`,
+    });
+  }
+
+  get logger(): Logger | undefined {
+    return this._logger;
   }
 
   // -------------------------------------------------
@@ -62,11 +71,7 @@ export class GpioSocketServer extends SocketServer {
   registerPin(config: PinConfig) {
     const pinNumber = this._mapper.pinNumber(config.pinName);
     if (pinNumber) {
-      const pin = new Gpio(
-        pinNumber,
-        config.direction,
-        config.edge || undefined
-      );
+      const pin = new Gpio(pinNumber, config.direction, config.edge || undefined);
       if (config.direction === 'in' && config.edge) {
         pin.watch(this.interruptHandler.bind(this, config.pinName));
       }
@@ -187,7 +192,7 @@ export class GpioSocketServer extends SocketServer {
   // ------------------- WEBSOCKET -------------------
   // -------------------------------------------------
 
-  handleMessage(socket: WebSocket, data: MessageEvent): void {
+  handleMessage(socket: WebSocket, data: MessageEvent | string): void {
     let messageStr = '';
     let reply = '';
     if (data instanceof Buffer) {
@@ -205,7 +210,7 @@ export class GpioSocketServer extends SocketServer {
 
     this._logger?.log({
       level: 'info',
-      message: `[server] received command ${data} ${messageStr} ${message.command}`,
+      message: `Received command ${data} ${messageStr} ${message.command}`,
     });
 
     // console.log(`[server] received command ${data} ${messageStr} ${message.command}`);
@@ -278,6 +283,11 @@ export class GpioSocketServer extends SocketServer {
         break;
       }
     }
+
+    this._logger?.log({
+      level: 'info',
+      message: `Sending response ${reply}`,
+    });
 
     socket.send(reply);
   }

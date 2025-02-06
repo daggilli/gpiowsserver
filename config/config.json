@@ -28,5 +28,14 @@
       "pinName": "GPIO21",
       "direction": "out"
     }
-  ]
+  ],
+  "logger": {
+    "useConsole": {
+      "level": "debug"
+    },
+    "useFile": {
+      "level": "debug",
+      "logfilePath": "logs/messagelog.json"
+    }
+  }
 }

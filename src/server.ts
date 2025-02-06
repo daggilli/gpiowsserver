@@ -1,3 +1,4 @@
+'use strict';
 import { WebSocketServer, WebSocket, MessageEvent, AddressInfo } from 'ws';
 import { ServerConfig } from './interfaces.js';
 import { cloneObject } from './utilities.js';
@@ -32,7 +33,6 @@ export abstract class SocketServer {
   }
 
   handleConnection(socket: WebSocket, _request?: IncomingMessage) {
-    console.log('Connecting...');
     this._socket = socket;
     socket.on('message', this.handleMessage.bind(this, socket));
     socket.on('error', this.handleError.bind(this));
