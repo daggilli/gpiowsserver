@@ -1,7 +1,8 @@
 'use strict';
+import 'dotenv/config';
 import { GpioSocketServer } from './gpioServer.js';
 import { GpioServerConfig } from './interfaces.js';
-import { loadConfigFile } from './utilities.js';
+import { loadConfigFile } from './configLoader.js';
 const serverConfig: GpioServerConfig = loadConfigFile();
 
 (async () => {
