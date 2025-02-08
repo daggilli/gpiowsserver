@@ -9,6 +9,7 @@ import { Logger } from 'winston';
 import { makeLogger } from './makeLogger.js';
 import { IncomingMessage } from 'http';
 import { cloneObject } from './utilities.js';
+import { send } from 'process';
 
 const boolToBin = (val: boolean): BinaryValue => (val ? 1 : 0);
 const binToBool = (val: BinaryValue): boolean => val === 1;
@@ -20,6 +21,14 @@ const malformedMessageError = JSON.stringify({
     errorString: 'request message was malformed',
   },
 });
+
+const pinNotRegisteredError = (pinName: string) =>
+  JSON.stringify({
+    messageType: 'error',
+    data: {
+      errorString: `pin ${pinName} is not registered`,
+    },
+  });
 
 const ack = (pinName: string, command: string): Ack => ({
   messageType: 'ack',
@@ -92,6 +101,10 @@ export class GpioSocketServer extends SocketServer {
       pin.unexport();
       this._pins.delete(pinName);
     }
+  }
+
+  pinIsRegistered(pinName: string): boolean {
+    return this._pins.has(pinName);
   }
 
   unregisterPins(pinNames: string[]) {
@@ -184,8 +197,12 @@ export class GpioSocketServer extends SocketServer {
         edge: edge ? 'rising' : 'falling',
       },
     });
+    this._logger?.log({
+      level: 'info',
+      message: `Sending response ${response}`,
+    });
+
     this._socket?.send(response);
-    console.log(response);
   }
 
   // -------------------------------------------------
@@ -214,10 +231,8 @@ export class GpioSocketServer extends SocketServer {
 
     this._logger?.log({
       level: 'info',
-      message: `Received command ${data} ${messageStr} ${message.command}`,
+      message: `Received command ${data}`,
     });
-
-    // console.log(`[server] received command ${data} ${messageStr} ${message.command}`);
 
     let pinName: string = '';
     let state: boolean = false;
@@ -226,6 +241,13 @@ export class GpioSocketServer extends SocketServer {
     if (params) {
       pinName = params.pinName;
       state = params.state ?? false;
+    }
+
+    if (pinName && pinName.length && !this.pinIsRegistered(pinName)) {
+      if (command !== 'registerPin') {
+        socket.send(pinNotRegisteredError(pinName));
+        return;
+      }
     }
 
     switch (command) {

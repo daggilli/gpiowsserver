@@ -22,6 +22,8 @@ import {
   MALFORMED_COMMAND_NO_STATE,
   MALFORMED_COMMAND_NO_DIRECTION,
   MALFORMED_COMMAND_UNKNOWN,
+  MALFORMED_COMMAND_UNREGISTERED_PIN,
+  MALFORMED_COMMAND_UNREGISTERED_PIN_EXPECTED_SEND,
 } from './testConstants.js';
 import { CallbackFunction } from './testInterfaces.js';
 
@@ -33,9 +35,7 @@ jest.mock('ws', () => ({
   }),
   WebSocket: jest.fn().mockImplementation(() => {
     return {
-      send: (_message: string) => {
-        console.log(_message);
-      },
+      send: (_message: string) => {},
     };
   }),
 }));
@@ -113,6 +113,12 @@ describe('GpioSocketServer', () => {
     server.handleMessage(mockSocket, JSON.stringify(MALFORMED_COMMAND_NO_PINNAME));
     expect(sendSpy).toHaveBeenCalledTimes(1);
     expect(sendSpy).toHaveBeenCalledWith(MALFORMED_COMMAND_EXPECTED_SEND);
+  });
+
+  it('should reject a malformed message: unregistered pin', () => {
+    server.handleMessage(mockSocket, JSON.stringify(MALFORMED_COMMAND_UNREGISTERED_PIN));
+    expect(sendSpy).toHaveBeenCalledTimes(1);
+    expect(sendSpy).toHaveBeenCalledWith(MALFORMED_COMMAND_UNREGISTERED_PIN_EXPECTED_SEND);
   });
 
   it('should handle a setState message', () => {

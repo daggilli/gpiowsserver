@@ -14,8 +14,7 @@ const COMMANDS = [
 ];
 const NEEDS_STATE: Needs = ['state', ['setState']];
 const NEEDS_DIRECTION: Needs = ['direction', ['registerPin']];
-const NEEDS_EDGE: Needs = ['edge', ['registerPin']];
-const NEEDS = [NEEDS_STATE, NEEDS_DIRECTION, NEEDS_EDGE];
+const NEEDS = [NEEDS_STATE, NEEDS_DIRECTION];
 
 export const validateMessage = (message: Message): boolean => {
   if (!Object.hasOwn(message, 'command') || !message.command.length) return false;

@@ -4,6 +4,7 @@ import { GpioServerConfig } from '../src/interfaces.js';
 export const INPUT_PIN = 'GPIO17';
 export const OUTPUT_PIN = 'GPIO21';
 export const NEW_PIN = 'GPIO22';
+const BAD_PIN = 'BAD_PIN';
 
 export const SERVER_CONFIG: GpioServerConfig = {
   port: 12313,
@@ -48,6 +49,16 @@ export const MALFORMED_COMMAND_NO_DIRECTION = {
     pinName: OUTPUT_PIN,
   },
 };
+
+export const MALFORMED_COMMAND_UNREGISTERED_PIN = {
+  command: 'setState',
+  params: {
+    pinName: BAD_PIN,
+    state: false,
+  },
+};
+export const MALFORMED_COMMAND_UNREGISTERED_PIN_EXPECTED_SEND =
+  '{"messageType":"error","data":{"errorString":"pin BAD_PIN is not registered"}}';
 
 export const SET_PIN_STATE_COMMAND = {
   command: 'setState',
