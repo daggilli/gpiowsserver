@@ -1,4 +1,5 @@
 'use strict';
+import net from 'net';
 import { WebSocketServer, WebSocket, MessageEvent, AddressInfo } from 'ws';
 import { ServerConfig } from './interfaces.js';
 import { cloneObject } from './utilities.js';
@@ -21,7 +22,12 @@ export abstract class SocketServer {
 
   get addressString(): string {
     const serverAddress = this.address;
-    if (!serverAddress) return '';
+    if (!serverAddress) {
+      let host = this._wss.options.host;
+      const port = this._wss.options.port;
+      if (host && net.isIPv6(host)) host = `[${host}]`;
+      return `${host}${port ? `:${port}` : ''}`;
+    }
     if (typeof serverAddress === 'string') return serverAddress;
     if (serverAddress.family === 'IPv4') return `${serverAddress.address}:${serverAddress.port}`;
     if (serverAddress.family === 'IPv6') return `[${serverAddress.address}]:${serverAddress.port}`;

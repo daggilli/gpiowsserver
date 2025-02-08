@@ -15,6 +15,7 @@ export interface LoggerConfig {
 }
 
 export interface ServerConfig {
+  host?: string;
   port: number;
   perMessageDeflate?: boolean;
 }

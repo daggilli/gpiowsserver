@@ -22,7 +22,7 @@ Almost all commands, with the exception of the `getRegisteredPins` command, requ
 {
   "command": "string"
   "params": {
-    ...
+    "field 1": "..."
   },
 }
 ```
@@ -56,7 +56,8 @@ Responses have a common format:
 {
   "messageType": "string",
   "data": {
-    ...
+    "field 1": "...",
+    "field 2": "..."
   }
 }
 ```
@@ -89,4 +90,36 @@ A full list of all commands and possible responses can be found in [commands](do
 
 ### Configuration
 
-The server reads a configuration file at startup.
+The server reads a JSON-format configuration file at startup. By default, it looks for the file in `config/config.json`. If a `.env` file is located in the project root containing the key `SERVER_CONFIG_PATH` this value will be used instead.
+
+The configuration file has the following format, with only `port` being mandatory:
+```json
+{
+  "host": "string",
+  "port": "number",
+  "perMessageDeflate": "boolean",
+  "pins": [
+    {
+      "pinName": "string",
+      "direction": "in | out",
+      "edge": "rising | falling | both"
+    },
+    {
+    }
+  ],
+  "logger": {
+    "useConsole": {
+      "level": "info | warn | debug etc."
+    },
+    "useFile": {
+      "level": "info | warn | debug etc."
+      "logfilePath": "string"
+    }
+  }
+}
+```
+The `perMessageDeflate` option is used to tell the server whether to compress responses. If in doubt, omit it or set it to `false`.
+
+The `pins` option is an array of pins that are to be registered at startup. Each element of the array takes a pin name, *e.g* `GPIO20`, a direction `in` or `out` and optionally `edge`, which tells the server to listen for logic level transitions on the pin and send a `stateChange` message if one is detected. The `edge` option is only applicable to pins with direction `in`.
+
+The `logger` option controls logging via the `winston` package. It has two options, `useConsole` and `useFile`. Both take a `level` option which is the log level at which messages of this type should appear. The `useFile` option takes a `logFilePath` aetting which is the destination for log messages.

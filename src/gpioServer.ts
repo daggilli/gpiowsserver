@@ -8,6 +8,7 @@ import { validateMessage } from './validateMessage.js';
 import { Logger } from 'winston';
 import { makeLogger } from './makeLogger.js';
 import { IncomingMessage } from 'http';
+import { cloneObject } from './utilities.js';
 
 const boolToBin = (val: boolean): BinaryValue => (val ? 1 : 0);
 const binToBool = (val: BinaryValue): boolean => val === 1;
@@ -36,7 +37,10 @@ export class GpioSocketServer extends SocketServer {
   private _logger: Logger | undefined;
 
   constructor(config: GpioServerConfig) {
-    super(config);
+    const { host, port, perMessageDeflate } = config;
+    super({ host, port, perMessageDeflate });
+    this._config = cloneObject(config);
+
     this._mapper = new PinMapper();
     this._pins = new Map();
 
