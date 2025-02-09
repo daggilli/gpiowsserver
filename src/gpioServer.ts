@@ -9,7 +9,6 @@ import { Logger } from 'winston';
 import { makeLogger } from './makeLogger.js';
 import { IncomingMessage } from 'http';
 import { cloneObject } from './utilities.js';
-import { send } from 'process';
 
 const boolToBin = (val: boolean): BinaryValue => (val ? 1 : 0);
 const binToBool = (val: BinaryValue): boolean => val === 1;
@@ -69,6 +68,15 @@ export class GpioSocketServer extends SocketServer {
 
   get logger(): Logger | undefined {
     return this._logger;
+  }
+
+  #send(response: string) {
+    this._logger?.log({
+      level: 'info',
+      message: `Sending response ${response}`,
+    });
+
+    this._socket?.send(response);
   }
 
   // -------------------------------------------------
@@ -197,12 +205,8 @@ export class GpioSocketServer extends SocketServer {
         edge: edge ? 'rising' : 'falling',
       },
     });
-    this._logger?.log({
-      level: 'info',
-      message: `Sending response ${response}`,
-    });
 
-    this._socket?.send(response);
+    this.#send(response);
   }
 
   // -------------------------------------------------
@@ -225,7 +229,7 @@ export class GpioSocketServer extends SocketServer {
     const message: Message = JSON.parse(messageStr);
 
     if (!validateMessage(message)) {
-      socket.send(malformedMessageError);
+      this.#send(malformedMessageError);
       return;
     }
 
@@ -245,7 +249,7 @@ export class GpioSocketServer extends SocketServer {
 
     if (pinName && pinName.length && !this.pinIsRegistered(pinName)) {
       if (command !== 'registerPin') {
-        socket.send(pinNotRegisteredError(pinName));
+        this.#send(pinNotRegisteredError(pinName));
         return;
       }
     }
@@ -315,7 +319,7 @@ export class GpioSocketServer extends SocketServer {
       message: `Sending response ${reply}`,
     });
 
-    socket.send(reply);
+    this.#send(reply);
   }
 }
 

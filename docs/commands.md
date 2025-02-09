@@ -132,7 +132,7 @@ These are representative examples of all available commands with responses.
 ```
 
 ### Errors
-If a command is unreconised or malformed the server will respons with:
+If a command is unrecognised or malformed the server will respond with:
 ```json
 {
   "messageType": "error",
@@ -141,3 +141,14 @@ If a command is unreconised or malformed the server will respons with:
   }
 }
 ```
+
+If a command attempts to access a pin that has not been registered the server will respond with:
+```json
+{
+  "messageType": "error",
+  "data": {
+    "errorString": "pin XXX is not registered"
+  }
+}
+```
+where `XXX` is the name of the pin requested.

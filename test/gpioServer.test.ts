@@ -35,6 +35,7 @@ jest.mock('ws', () => ({
   }),
   WebSocket: jest.fn().mockImplementation(() => {
     return {
+      on: (_event: string, _cb: CallbackFunction) => {},
       send: (_message: string) => {},
     };
   }),
@@ -98,18 +99,21 @@ describe('GpioSocketServer', () => {
   });
 
   it('should reject a malformed message: no command field', () => {
+    server.handleConnection(mockSocket);
     server.handleMessage(mockSocket, JSON.stringify(MALFORMED_COMMAND));
     expect(sendSpy).toHaveBeenCalledTimes(1);
     expect(sendSpy).toHaveBeenCalledWith(MALFORMED_COMMAND_EXPECTED_SEND);
   });
 
   it('should reject a malformed message: unrecognised command', () => {
+    server.handleConnection(mockSocket);
     server.handleMessage(mockSocket, JSON.stringify(MALFORMED_COMMAND_UNKNOWN));
     expect(sendSpy).toHaveBeenCalledTimes(1);
     expect(sendSpy).toHaveBeenCalledWith(MALFORMED_COMMAND_EXPECTED_SEND);
   });
 
   it('should reject a malformed message: no params.pinName field', () => {
+    server.handleConnection(mockSocket);
     server.handleMessage(mockSocket, JSON.stringify(MALFORMED_COMMAND_NO_PINNAME));
     expect(sendSpy).toHaveBeenCalledTimes(1);
     expect(sendSpy).toHaveBeenCalledWith(MALFORMED_COMMAND_EXPECTED_SEND);
@@ -123,6 +127,7 @@ describe('GpioSocketServer', () => {
 
   it('should handle a setState message', () => {
     const setPinStateSpy = jest.spyOn(server, 'setPinState');
+    server.handleConnection(mockSocket);
     server.handleMessage(mockSocket, JSON.stringify(SET_PIN_STATE_COMMAND));
     expect(setPinStateSpy).toHaveBeenCalledTimes(1);
     expect(setPinStateSpy).toHaveBeenCalledWith(OUTPUT_PIN, true);
@@ -131,6 +136,7 @@ describe('GpioSocketServer', () => {
   });
 
   it('should reject a malformed message: setState with no params.pinName field', () => {
+    server.handleConnection(mockSocket);
     server.handleMessage(mockSocket, JSON.stringify(MALFORMED_COMMAND_NO_STATE));
     expect(sendSpy).toHaveBeenCalledTimes(1);
     expect(sendSpy).toHaveBeenCalledWith(MALFORMED_COMMAND_EXPECTED_SEND);
@@ -139,6 +145,7 @@ describe('GpioSocketServer', () => {
   it('should handle a toggleState message', () => {
     const togglePinStateSpy = jest.spyOn(server, 'togglePinState');
 
+    server.handleConnection(mockSocket);
     server.handleMessage(mockSocket, JSON.stringify(TOGGLE_PIN_STATE_COMMAND));
     expect(togglePinStateSpy).toHaveBeenCalledTimes(1);
     expect(togglePinStateSpy).toHaveBeenCalledWith(OUTPUT_PIN);
@@ -150,6 +157,7 @@ describe('GpioSocketServer', () => {
     const getPinStateSpy = jest.spyOn(server, 'getPinState');
 
     server.handleMessage(mockSocket, JSON.stringify(GET_PIN_STATE_COMMAND));
+    server.handleConnection(mockSocket);
     expect(getPinStateSpy).toHaveBeenCalledTimes(1);
     expect(getPinStateSpy).toHaveBeenCalledWith(OUTPUT_PIN);
     expect(sendSpy).toHaveBeenCalledTimes(1);
@@ -159,6 +167,7 @@ describe('GpioSocketServer', () => {
   it('should handle a readDirection message', () => {
     const getPinDirectionSpy = jest.spyOn(server, 'getPinDirection');
 
+    server.handleConnection(mockSocket);
     server.handleMessage(mockSocket, JSON.stringify(GET_PIN_DIRECTION_COMMAND));
     expect(getPinDirectionSpy).toHaveBeenCalledTimes(1);
     expect(getPinDirectionSpy).toHaveBeenCalledWith(OUTPUT_PIN);
@@ -169,6 +178,7 @@ describe('GpioSocketServer', () => {
   it('should handle a registerPin message', () => {
     const registerPinSpy = jest.spyOn(server, 'registerPin');
 
+    server.handleConnection(mockSocket);
     server.handleMessage(mockSocket, JSON.stringify(REGISTER_PIN_COMMAND));
     expect(registerPinSpy).toHaveBeenCalledTimes(1);
     expect(sendSpy).toHaveBeenCalledTimes(1);
@@ -184,6 +194,7 @@ describe('GpioSocketServer', () => {
   it('should handle a getRegisteredPins message', () => {
     const getRegisteredPinsSpy = jest.spyOn(server, 'getRegisteredPins');
 
+    server.handleConnection(mockSocket);
     server.handleMessage(mockSocket, JSON.stringify(GET_REG_PINS_COMMAND));
     expect(getRegisteredPinsSpy).toHaveBeenCalledTimes(1);
     expect(sendSpy).toHaveBeenCalledTimes(1);
