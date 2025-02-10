@@ -31,10 +31,10 @@
   ],
   "logger": {
     "useConsole": {
-      "level": "debug"
+      "level": "warn"
     },
     "useFile": {
-      "level": "debug",
+      "level": "warn",
       "logfilePath": "logs/messagelog.json"
     }
   }

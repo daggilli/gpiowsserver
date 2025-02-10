@@ -314,11 +314,6 @@ export class GpioSocketServer extends SocketServer {
       }
     }
 
-    this._logger?.log({
-      level: 'info',
-      message: `Sending response ${reply}`,
-    });
-
     this.#send(reply);
   }
 }
