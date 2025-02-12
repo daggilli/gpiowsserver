@@ -1,6 +1,6 @@
 'use strict';
 import { MessageEvent, WebSocket } from 'ws';
-import { Ack, GpioServerConfig, Message, PinConfig, PinState } from './interfaces.js';
+import { Ack, GpioArgs, GpioServerConfig, Message, PinConfig, PinState } from './interfaces.js';
 import { SocketServer } from './server.js';
 import { Gpio, BinaryValue, Direction, Edge } from 'onoff';
 import { PinMapper } from './pinMapper.js';
@@ -92,7 +92,15 @@ export class GpioSocketServer extends SocketServer {
   registerPin(config: PinConfig) {
     const pinNumber = this._mapper.pinNumber(config.pinName);
     if (pinNumber) {
-      const pin = new Gpio(pinNumber, config.direction, config.edge || undefined);
+      const args: GpioArgs[] = [pinNumber, config.direction, config.edge || undefined];
+      if (
+        Object.hasOwn(config, 'debounceTimeout') &&
+        Number.isInteger(config.debounceTimeout) &&
+        config.direction === 'in'
+      ) {
+        args.push({ debounceTimeout: config.debounceTimeout! });
+      }
+      const pin = Reflect.construct(Gpio, args);
       if (config.direction === 'in' && config.edge) {
         pin.watch(this.interruptHandler.bind(this, config.pinName));
       }

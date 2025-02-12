@@ -6,6 +6,9 @@ export const OUTPUT_PIN = 'GPIO21';
 export const NEW_PIN = 'GPIO22';
 const BAD_PIN = 'BAD_PIN';
 
+export const JEST_TEST_SUITE_NAME = 'GpioSocketServer';
+export const JEST_CREATE_SERVER_TEST_NAME = 'should create a GpioSocketServer';
+
 export const SERVER_CONFIG: GpioServerConfig = {
   port: 12313,
   pins: [
@@ -60,6 +63,11 @@ export const MALFORMED_COMMAND_UNREGISTERED_PIN = {
 export const MALFORMED_COMMAND_UNREGISTERED_PIN_EXPECTED_SEND =
   '{"messageType":"error","data":{"errorString":"pin BAD_PIN is not registered"}}';
 
+export const CREATE_SERVER_EXEPECTED_ARGS = [
+  [17, 'in', 'both'],
+  [21, 'out', undefined],
+];
+
 export const SET_PIN_STATE_COMMAND = {
   command: 'setState',
   params: {
@@ -105,8 +113,25 @@ export const REGISTER_PIN_COMMAND = {
     edge: 'rising',
   },
 };
+export const REGISTER_PIN_EXPECTED_ARGS = [22, 'in', 'rising'];
 export const REGISTER_PIN_EXPECTED_SEND =
   '{"messageType":"ack","data":{"command":"registerPin","pinName":"GPIO22"}}';
+
+export const REGISTER_PIN_WITH_DEBOUNCE_COMMAND = {
+  command: 'registerPin',
+  params: {
+    pinName: NEW_PIN,
+    direction: 'in',
+    edge: 'rising',
+    debounceTimeout: 10,
+  },
+};
+export const REGISTER_PIN_WITH_DEBOUNCE_EXPECTED_ARGS = [
+  22,
+  'in',
+  'rising',
+  { debounceTimeout: 10 },
+];
 
 export const GET_REG_PINS_COMMAND = { command: 'getRegisteredPins' };
 export const GET_REG_PINS_EXPECTED_SEND =

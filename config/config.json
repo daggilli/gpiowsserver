@@ -10,7 +10,8 @@
     {
       "pinName": "GPIO27",
       "direction": "in",
-      "edge": "both"
+      "edge": "both",
+      "debounceTimeout": 10
     },
     {
       "pinName": "GPIO25",

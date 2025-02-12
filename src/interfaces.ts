@@ -37,7 +37,14 @@ export interface PinConfig {
   pinName: string;
   direction: Direction;
   edge?: Edge;
+  debounceTimeout?: number;
 }
+
+export interface GpioOptions {
+  debounceTimeout: number;
+}
+
+export type GpioArgs = string | number | Direction | Edge | GpioOptions | undefined;
 
 export interface PinState extends PinConfig {
   state?: boolean;

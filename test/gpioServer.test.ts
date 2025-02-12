@@ -1,8 +1,10 @@
 'use strict';
 import { WebSocket } from 'ws';
+import { Gpio } from 'onoff';
 import { GpioSocketServer } from '../src/gpioServer.js';
 import {
   SERVER_CONFIG,
+  CREATE_SERVER_EXEPECTED_ARGS,
   GET_REG_PINS_EXPECTED_SEND,
   GET_REG_PINS_COMMAND,
   SET_PIN_STATE_COMMAND,
@@ -24,6 +26,11 @@ import {
   MALFORMED_COMMAND_UNKNOWN,
   MALFORMED_COMMAND_UNREGISTERED_PIN,
   MALFORMED_COMMAND_UNREGISTERED_PIN_EXPECTED_SEND,
+  REGISTER_PIN_WITH_DEBOUNCE_COMMAND,
+  REGISTER_PIN_WITH_DEBOUNCE_EXPECTED_ARGS,
+  REGISTER_PIN_EXPECTED_ARGS,
+  JEST_CREATE_SERVER_TEST_NAME,
+  JEST_TEST_SUITE_NAME,
 } from './testConstants.js';
 import { CallbackFunction } from './testInterfaces.js';
 
@@ -75,10 +82,11 @@ jest.mock('../src/pinMapper.js', () => ({
   }),
 }));
 
-describe('GpioSocketServer', () => {
+describe(JEST_TEST_SUITE_NAME, () => {
   let server: GpioSocketServer;
   let mockSocket: WebSocket;
   let sendSpy: jest.SpyInstance;
+  const mockedGpio = jest.mocked(Gpio);
 
   beforeAll(() => {
     server = new GpioSocketServer(SERVER_CONFIG);
@@ -87,15 +95,21 @@ describe('GpioSocketServer', () => {
   });
 
   beforeEach(() => {
-    sendSpy.mockClear();
+    const testName = expect.getState().currentTestName;
+    if (testName !== `${JEST_TEST_SUITE_NAME} ${JEST_CREATE_SERVER_TEST_NAME}`) {
+      jest.clearAllMocks();
+    }
   });
 
-  it('should create a GpioSocketServer', () => {
+  it(JEST_CREATE_SERVER_TEST_NAME, () => {
     expect(server).not.toBeNull();
     expect(server._config).not.toBeNull();
     expect(server._wss).not.toBeNull();
     expect(server._socket).toBeNull();
     expect(server._config).toStrictEqual(SERVER_CONFIG);
+    expect(mockedGpio).toHaveBeenCalledTimes(2);
+    expect(mockedGpio).toHaveBeenNthCalledWith(1, ...CREATE_SERVER_EXEPECTED_ARGS[0]);
+    expect(mockedGpio).toHaveBeenNthCalledWith(2, ...CREATE_SERVER_EXEPECTED_ARGS[1]);
   });
 
   it('should reject a malformed message: no command field', () => {
@@ -183,6 +197,20 @@ describe('GpioSocketServer', () => {
     expect(registerPinSpy).toHaveBeenCalledTimes(1);
     expect(sendSpy).toHaveBeenCalledTimes(1);
     expect(sendSpy).toHaveBeenCalledWith(REGISTER_PIN_EXPECTED_SEND);
+    expect(mockedGpio).toHaveBeenCalledTimes(1);
+    expect(mockedGpio).toHaveBeenCalledWith(...REGISTER_PIN_EXPECTED_ARGS);
+  });
+
+  it('should handle a registerPin with debounce timeout message', () => {
+    const registerPinSpy = jest.spyOn(server, 'registerPin');
+
+    server.handleConnection(mockSocket);
+    server.handleMessage(mockSocket, JSON.stringify(REGISTER_PIN_WITH_DEBOUNCE_COMMAND));
+    expect(registerPinSpy).toHaveBeenCalledTimes(1);
+    expect(sendSpy).toHaveBeenCalledTimes(1);
+    expect(sendSpy).toHaveBeenCalledWith(REGISTER_PIN_EXPECTED_SEND);
+    expect(mockedGpio).toHaveBeenCalledTimes(1);
+    expect(mockedGpio).toHaveBeenCalledWith(...REGISTER_PIN_WITH_DEBOUNCE_EXPECTED_ARGS);
   });
 
   it('should reject a malformed message: registerPin with no params.direction field', () => {

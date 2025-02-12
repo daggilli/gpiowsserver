@@ -102,7 +102,8 @@ The configuration file has the following format, with only `port` being mandator
     {
       "pinName": "string",
       "direction": "in | out",
-      "edge": "rising | falling | both"
+      "edge": "rising | falling | both",
+      "debounceTimeout": "number"
     },
     {
     }
@@ -122,4 +123,11 @@ The `perMessageDeflate` option is used to tell the server whether to compress re
 
 The `pins` option is an array of pins that are to be registered at startup. Each element of the array takes a pin name, *e.g* `GPIO20`, a direction `in` or `out` and optionally `edge`, which tells the server to listen for logic level transitions on the pin and send a `stateChange` message if one is detected. The `edge` option is only applicable to pins with direction `in`.
 
+The `debounceTimeout` option of an entry in `pins`, which also is only applicable to pins with direction `in`, controls the software debounce interval that the `onoff` library applies to logic level transitions. It is a number, in milliseconds,which specifies the time window after an initial transition during which subsequent transitions will not trigger an interrupt. After this time window has elapsed, the value on the pin will be sent to the interrupt handler. Alternatively, an input pin connected to, say, a microswitch, can be debounced in hardware. A simple circuit to do this is as follows:
+
+![Alt text](docs/debounce_pullup_small.png)
+
+This circuit has a time constant of 8.2ms, which is generally adequate, although adjustment may be needed. More sophisitcated techniques involving, for example, a Schmitt trigger would of course also be serviceable.
+
+#### Logging
 The `logger` option controls logging via the `winston` package. It has two options, `useConsole` and `useFile`. Both take a `level` option which is the log level at which messages of this type should appear. The `useFile` option takes a `logFilePath` aetting which is the destination for log messages.
