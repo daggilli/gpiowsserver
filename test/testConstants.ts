@@ -5,7 +5,8 @@ export const INPUT_PIN = 'GPIO17';
 export const OUTPUT_PIN = 'GPIO21';
 export const NEW_PIN = 'GPIO22';
 const BAD_PIN = 'BAD_PIN';
-
+const MESSAGE_ID = 'messageid_1234';
+export const UUIDV4 = '6ee8a8d6-1fb0-44e0-abd0-0f826a70211c';
 export const JEST_TEST_SUITE_NAME = 'GpioSocketServer';
 export const JEST_CREATE_SERVER_TEST_NAME = 'should create a GpioSocketServer';
 
@@ -78,6 +79,16 @@ export const SET_PIN_STATE_COMMAND = {
 export const SET_PIN_STATE_EXPECTED_SEND =
   '{"messageType":"ack","data":{"command":"setState","pinName":"GPIO21"}}';
 
+export const SET_PIN_STATE_COMMAND_WITH_ID = {
+  command: 'setState',
+  messageId: MESSAGE_ID,
+  params: {
+    pinName: OUTPUT_PIN,
+    state: true,
+  },
+};
+export const SET_PIN_STATE_WITH_ID_EXPECTED_SEND = `{"messageType":"ack","messageId":"${MESSAGE_ID}","data":{"command":"setState","pinName":"GPIO21"}}`;
+
 export const TOGGLE_PIN_STATE_COMMAND = {
   command: 'toggleState',
   params: {
@@ -136,3 +147,7 @@ export const REGISTER_PIN_WITH_DEBOUNCE_EXPECTED_ARGS = [
 export const GET_REG_PINS_COMMAND = { command: 'getRegisteredPins' };
 export const GET_REG_PINS_EXPECTED_SEND =
   '{"messageType":"registeredPins","data":[{"pinName":"GPIO17","direction":"in","edge":"both","state":true},{"pinName":"GPIO21","direction":"out","state":true},{"pinName":"GPIO22","direction":"in","edge":"rising","state":true}]}';
+
+export const STATE_CHANGE_EXPECTED_SEND =
+  '{"messageType":"stateChange","data":{"pinName":"GPIO17","edge":"rising"}}';
+export const STATE_CHAHNGE_WITH_ID_EXPECTED_SEND = `{"messageType":"stateChange","messageId":"${UUIDV4}","data":{"pinName":"GPIO17","edge":"rising"}}`;

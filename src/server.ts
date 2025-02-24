@@ -6,9 +6,9 @@ import { cloneObject } from './utilities.js';
 import { IncomingMessage } from 'http';
 
 export abstract class SocketServer {
-  _wss: WebSocketServer;
-  _socket: WebSocket | null = null;
-  _config: ServerConfig;
+  protected _wss: WebSocketServer;
+  protected _socket: WebSocket | null = null;
+  protected _config: ServerConfig;
 
   constructor(config: ServerConfig) {
     this._config = cloneObject(config);

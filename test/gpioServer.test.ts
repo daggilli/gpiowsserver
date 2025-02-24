@@ -31,8 +31,15 @@ import {
   REGISTER_PIN_EXPECTED_ARGS,
   JEST_CREATE_SERVER_TEST_NAME,
   JEST_TEST_SUITE_NAME,
+  SET_PIN_STATE_COMMAND_WITH_ID,
+  SET_PIN_STATE_WITH_ID_EXPECTED_SEND,
+  INPUT_PIN,
+  STATE_CHANGE_EXPECTED_SEND,
+  UUIDV4,
+  STATE_CHAHNGE_WITH_ID_EXPECTED_SEND,
 } from './testConstants.js';
 import { CallbackFunction } from './testInterfaces.js';
+import { GpioServerConfig } from '../src/interfaces.js';
 
 jest.mock('ws', () => ({
   WebSocketServer: jest.fn().mockImplementation(() => {
@@ -82,6 +89,10 @@ jest.mock('../src/pinMapper.js', () => ({
   }),
 }));
 
+jest.mock('uuid', () => ({
+  v4: jest.fn().mockImplementation(() => UUIDV4),
+}));
+
 describe(JEST_TEST_SUITE_NAME, () => {
   let server: GpioSocketServer;
   let mockSocket: WebSocket;
@@ -103,10 +114,10 @@ describe(JEST_TEST_SUITE_NAME, () => {
 
   it(JEST_CREATE_SERVER_TEST_NAME, () => {
     expect(server).not.toBeNull();
-    expect(server._config).not.toBeNull();
-    expect(server._wss).not.toBeNull();
-    expect(server._socket).toBeNull();
-    expect(server._config).toStrictEqual(SERVER_CONFIG);
+    expect(server['_config']).not.toBeNull();
+    expect(server['_wss']).not.toBeNull();
+    expect(server['_socket']).toBeNull();
+    expect(server['_config']).toStrictEqual(SERVER_CONFIG);
     expect(mockedGpio).toHaveBeenCalledTimes(2);
     expect(mockedGpio).toHaveBeenNthCalledWith(1, ...CREATE_SERVER_EXEPECTED_ARGS[0]);
     expect(mockedGpio).toHaveBeenNthCalledWith(2, ...CREATE_SERVER_EXEPECTED_ARGS[1]);
@@ -147,6 +158,16 @@ describe(JEST_TEST_SUITE_NAME, () => {
     expect(setPinStateSpy).toHaveBeenCalledWith(OUTPUT_PIN, true);
     expect(sendSpy).toHaveBeenCalledTimes(1);
     expect(sendSpy).toHaveBeenCalledWith(SET_PIN_STATE_EXPECTED_SEND);
+  });
+
+  it('should handle a setState message with messageId field', () => {
+    const setPinStateSpy = jest.spyOn(server, 'setPinState');
+    server.handleConnection(mockSocket);
+    server.handleMessage(mockSocket, JSON.stringify(SET_PIN_STATE_COMMAND_WITH_ID));
+    expect(setPinStateSpy).toHaveBeenCalledTimes(1);
+    expect(setPinStateSpy).toHaveBeenCalledWith(OUTPUT_PIN, true);
+    expect(sendSpy).toHaveBeenCalledTimes(1);
+    expect(sendSpy).toHaveBeenCalledWith(SET_PIN_STATE_WITH_ID_EXPECTED_SEND);
   });
 
   it('should reject a malformed message: setState with no params.pinName field', () => {
@@ -227,5 +248,19 @@ describe(JEST_TEST_SUITE_NAME, () => {
     expect(getRegisteredPinsSpy).toHaveBeenCalledTimes(1);
     expect(sendSpy).toHaveBeenCalledTimes(1);
     expect(sendSpy).toHaveBeenCalledWith(GET_REG_PINS_EXPECTED_SEND);
+  });
+
+  it('should handle an interrupt request', () => {
+    server['interruptHandler'](INPUT_PIN, null, 1);
+    expect(sendSpy).toHaveBeenCalledTimes(1);
+    expect(sendSpy).toHaveBeenCalledWith(STATE_CHANGE_EXPECTED_SEND);
+  });
+
+  it('should handle an interrupt request with generateId true', () => {
+    const config = server['_config'] as GpioServerConfig;
+    config.generateId = true;
+    server['interruptHandler'](INPUT_PIN, null, 1);
+    expect(sendSpy).toHaveBeenCalledTimes(1);
+    expect(sendSpy).toHaveBeenCalledWith(STATE_CHAHNGE_WITH_ID_EXPECTED_SEND);
   });
 });
