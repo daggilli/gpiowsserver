@@ -88,6 +88,36 @@ indicating that the pin is seeing a low logic level. The response to the `setSta
 
 A full list of all commands and possible responses can be found in [commands](docs/commands.md).
 
+#### Message IDs
+
+Commands can also take an optional `messageId` field, for example thus:
+
+```json
+{
+  "command": "readState",
+  "messageId": "rs_1740502620010_C0A82211",
+  "params": {
+    "pinName": "GPIO17"
+  }
+}
+```
+
+to which a response might be:
+
+```json
+{
+  "messageType": "state",  
+  "messageId": "rs_1740502620010_C0A82211",
+  "data": {
+    "pinName": "GPIO17",
+    "state": false
+  }
+}
+```
+The `messageId` is completely free-form. It is returned to the caller unaltered.
+
+The server can also generate message IDs for state change events; see below.
+
 ### Configuration
 
 The server reads a JSON-format configuration file at startup. By default, it looks for the file in `config/config.json`. If a `.env` file is located in the project root containing the key `SERVER_CONFIG_PATH` this value will be used instead.
@@ -98,6 +128,7 @@ The configuration file has the following format, with only `port` being mandator
   "host": "string",
   "port": "number",
   "perMessageDeflate": "boolean",
+  "generateId": "boolean",
   "pins": [
     {
       "pinName": "string",
@@ -120,6 +151,19 @@ The configuration file has the following format, with only `port` being mandator
 }
 ```
 The `perMessageDeflate` option is used to tell the server whether to compress responses. If in doubt, omit it or set it to `false`.
+
+The `generateId` option is used to determine whether a state change response will have an associated `messageId` field. If it is set, the server's interrupt handler will generate a unique message ID. The ID is a version 4 UUID string, for example `84d872e2-f39a-11ef-85b3-5b7fbb5b5a30`. A state change response might therefore look like the following:
+
+```json
+{
+  "messageType": "stateChange",
+  "messageId": "84d872e2-f39a-11ef-85b3-5b7fbb5b5a30",
+  "data": {
+    "pinName":"GPIO17",
+    "edge":"rising"
+  }
+}
+```
 
 The `pins` option is an array of pins that are to be registered at startup. Each element of the array takes a pin name, *e.g* `GPIO20`, a direction `in` or `out` and optionally `edge`, which tells the server to listen for logic level transitions on the pin and send a `stateChange` message if one is detected. The `edge` option is only applicable to pins with direction `in`.
 

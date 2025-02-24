@@ -1,6 +1,7 @@
 {
   "port": 9080,
   "perMessageDeflate": false,
+  "generateId": true,
   "pins": [
     {
       "pinName": "GPIO17",

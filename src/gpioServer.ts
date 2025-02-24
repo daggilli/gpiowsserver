@@ -3,6 +3,7 @@ import { MessageEvent, WebSocket } from 'ws';
 import { Ack, GpioArgs, GpioServerConfig, Message, PinConfig, PinState } from './interfaces.js';
 import { SocketServer } from './server.js';
 import { Gpio, BinaryValue, Direction, Edge } from 'onoff';
+import { v4 as uuidv4 } from 'uuid';
 import { PinMapper } from './pinMapper.js';
 import { validateMessage } from './validateMessage.js';
 import { Logger } from 'winston';
@@ -14,23 +15,27 @@ const boolToBin = (val: boolean): BinaryValue => (val ? 1 : 0);
 const binToBool = (val: BinaryValue): boolean => val === 1;
 const invertValue = (val: BinaryValue): BinaryValue => (val === 0 ? 1 : 0);
 
-const malformedMessageError = JSON.stringify({
-  messageType: 'error',
-  data: {
-    errorString: 'request message was malformed',
-  },
-});
-
-const pinNotRegisteredError = (pinName: string) =>
+const malformedMessageError = (messageId?: string | undefined) =>
   JSON.stringify({
     messageType: 'error',
+    messageId,
+    data: {
+      errorString: 'request message was malformed',
+    },
+  });
+
+const pinNotRegisteredError = (pinName: string, messageId?: string | undefined) =>
+  JSON.stringify({
+    messageType: 'error',
+    messageId,
     data: {
       errorString: `pin ${pinName} is not registered`,
     },
   });
 
-const ack = (pinName: string, command: string): Ack => ({
+const ack = (pinName: string, command: string, messageId?: string | undefined): Ack => ({
   messageType: 'ack',
+  messageId,
   data: {
     command,
     pinName,
@@ -206,8 +211,14 @@ export class GpioSocketServer extends SocketServer {
     err: Error | null | undefined,
     edge: BinaryValue
   ): void {
+    let messageId: string | undefined;
+    const cfg = this._config as GpioServerConfig;
+    if (cfg.generateId) {
+      messageId = uuidv4();
+    }
     const response = JSON.stringify({
       messageType: 'stateChange',
+      messageId,
       data: {
         pinName,
         edge: edge ? 'rising' : 'falling',
@@ -236,8 +247,9 @@ export class GpioSocketServer extends SocketServer {
     }
     const message: Message = JSON.parse(messageStr);
 
+    const { messageId } = message;
     if (!validateMessage(message)) {
-      this.#send(malformedMessageError);
+      this.#send(malformedMessageError(messageId));
       return;
     }
 
@@ -257,7 +269,7 @@ export class GpioSocketServer extends SocketServer {
 
     if (pinName && pinName.length && !this.pinIsRegistered(pinName)) {
       if (command !== 'registerPin') {
-        this.#send(pinNotRegisteredError(pinName));
+        this.#send(pinNotRegisteredError(pinName, messageId));
         return;
       }
     }
@@ -265,13 +277,13 @@ export class GpioSocketServer extends SocketServer {
     switch (command) {
       case 'setState': {
         this.setPinState(pinName, state);
-        reply = ackReply(ack(pinName, command));
+        reply = ackReply(ack(pinName, command, messageId));
         break;
       }
 
       case 'toggleState': {
         const newState = this.togglePinState(pinName);
-        const toggleAck = ack(pinName, command);
+        const toggleAck = ack(pinName, command, messageId);
         toggleAck.data.state = newState;
         reply = ackReply(toggleAck);
         break;
@@ -281,6 +293,7 @@ export class GpioSocketServer extends SocketServer {
         const state = this.getPinState(pinName);
         reply = JSON.stringify({
           messageType: 'state',
+          messageId,
           data: {
             pinName,
             state,
@@ -293,6 +306,7 @@ export class GpioSocketServer extends SocketServer {
         const direction = this.getPinDirection(pinName);
         reply = JSON.stringify({
           messageType: 'direction',
+          messageId,
           data: {
             pinName,
             direction,
@@ -303,7 +317,7 @@ export class GpioSocketServer extends SocketServer {
 
       case 'registerPin': {
         this.registerPin(params as PinConfig);
-        reply = ackReply(ack(pinName, command));
+        reply = ackReply(ack(pinName, command, messageId));
         break;
       }
 
@@ -311,13 +325,14 @@ export class GpioSocketServer extends SocketServer {
         const registeredPins = this.getRegisteredPins();
         reply = JSON.stringify({
           messageType: 'registeredPins',
+          messageId,
           data: registeredPins,
         });
         break;
       }
 
       default: {
-        reply = malformedMessageError;
+        reply = malformedMessageError(messageId);
         break;
       }
     }

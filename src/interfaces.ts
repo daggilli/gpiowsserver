@@ -21,6 +21,7 @@ export interface ServerConfig {
 }
 
 export interface GpioServerConfig extends ServerConfig {
+  generateId?: boolean;
   pins?: PinConfig[];
   logger?: LoggerConfig;
 }
@@ -59,6 +60,7 @@ export interface Params {
 
 export interface Message {
   command: string;
+  messageId?: string;
   params?: Params;
 }
 
@@ -70,5 +72,6 @@ export interface AckPayload {
 
 export interface Ack {
   messageType: string;
+  messageId?: string;
   data: AckPayload;
 }
